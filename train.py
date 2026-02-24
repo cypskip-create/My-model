@@ -4,7 +4,7 @@ train.py Training script for TransformerLM
 Supports both:
 
 - Raw .txt files (tokenized on the fly)
-- Pre-tokenized .bin files (from data_pipeline.py — much faster)
+- Pre-tokenized .bin files (from data_pipeline.py much faster)
 
 Usage:
 # From text file
