@@ -8,7 +8,7 @@ Supports both:
 
 Usage:
 # From text file
-python train.py –data your_text.txt
+python train.py data your_text.txt
 
 ```
 # From pre-tokenized binary files (recommended for large datasets)
