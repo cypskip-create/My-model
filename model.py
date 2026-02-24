@@ -1,7 +1,15 @@
 ## “””
-Transformer Language Model
+AfriCode LM — African Code Assistant Language Model
 
-A GPT-style decoder-only transformer you can train from scratch.
+A GPT-style decoder-only transformer optimized for:
+
+- African API integrations (M-Pesa, Paystack, Flutterwave, MTN MoMo)
+- USSD application development
+- Low-bandwidth African infrastructure context
+- Python, JavaScript, PHP, Java code generation
+- African fintech and mobile money solutions
+
+Author: Your AI Company
 “””
 
 import math
@@ -18,38 +26,28 @@ import torch.nn.functional as F
 class ModelConfig:
 def **init**(
 self,
-vocab_size: int = 50257,      # GPT-2 tokenizer default; change to match yours
-context_length: int = 256,    # max sequence length (tokens)
-d_model: int = 384,           # embedding / hidden dimension
-n_heads: int = 6,             # attention heads (d_model must be divisible)
-n_layers: int = 6,            # transformer blocks
-d_ff: int = 1536,             # feed-forward inner dimension (usually 4 * d_model)
+vocab_size: int = 50257,       # GPT-2 tokenizer (great for code)
+context_length: int = 512,     # longer context = better for full code blocks
+d_model: int = 512,            # embedding dimension
+n_heads: int = 8,              # attention heads
+n_layers: int = 8,             # transformer blocks
+d_ff: int = 2048,              # feed-forward inner dim (4 * d_model)
 dropout: float = 0.1,
-bias: bool = True,            # use bias in linear layers?
+bias: bool = True,
 ):
 assert d_model % n_heads == 0, “d_model must be divisible by n_heads”
-self.vocab_size = vocab_size
+self.vocab_size     = vocab_size
 self.context_length = context_length
-self.d_model = d_model
-self.n_heads = n_heads
-self.n_layers = n_layers
-self.d_ff = d_ff
-self.dropout = dropout
-self.bias = bias
-
-```
-def __repr__(self):
-    total = sum(p.numel() for p in TransformerLM(self).parameters())
-    return (
-        f"ModelConfig(vocab={self.vocab_size}, ctx={self.context_length}, "
-        f"d={self.d_model}, heads={self.n_heads}, layers={self.n_layers}, "
-        f"~{total/1e6:.1f}M params)"
-    )
-```
+self.d_model        = d_model
+self.n_heads        = n_heads
+self.n_layers       = n_layers
+self.d_ff           = d_ff
+self.dropout        = dropout
+self.bias           = bias
 
 # —————————————————————————
 
-# Building blocks
+# Building Blocks
 
 # —————————————————————————
 
@@ -60,43 +58,40 @@ class MultiHeadAttention(nn.Module):
 def __init__(self, cfg: ModelConfig):
     super().__init__()
     self.n_heads = cfg.n_heads
-    self.d_head = cfg.d_model // cfg.n_heads
+    self.d_head  = cfg.d_model // cfg.n_heads
 
-    self.qkv = nn.Linear(cfg.d_model, 3 * cfg.d_model, bias=cfg.bias)
+    self.qkv      = nn.Linear(cfg.d_model, 3 * cfg.d_model, bias=cfg.bias)
     self.out_proj = nn.Linear(cfg.d_model, cfg.d_model, bias=cfg.bias)
-    self.attn_drop = nn.Dropout(cfg.dropout)
+    self.attn_drop  = nn.Dropout(cfg.dropout)
     self.resid_drop = nn.Dropout(cfg.dropout)
 
-    # Causal mask (lower-triangular)
+    # Causal mask so the model only attends to past tokens
     mask = torch.tril(torch.ones(cfg.context_length, cfg.context_length))
     self.register_buffer("mask", mask.view(1, 1, cfg.context_length, cfg.context_length))
 
 def forward(self, x):
     B, T, C = x.shape
 
-    # Project to Q, K, V
     q, k, v = self.qkv(x).split(C, dim=-1)
 
-    # Reshape to (B, heads, T, d_head)
     def reshape(t):
         return t.view(B, T, self.n_heads, self.d_head).transpose(1, 2)
 
     q, k, v = reshape(q), reshape(k), reshape(v)
 
-    # Scaled dot-product attention
     scale = math.sqrt(self.d_head)
-    attn = (q @ k.transpose(-2, -1)) / scale          # (B, H, T, T)
-    attn = attn.masked_fill(self.mask[:, :, :T, :T] == 0, float("-inf"))
-    attn = F.softmax(attn, dim=-1)
-    attn = self.attn_drop(attn)
+    attn  = (q @ k.transpose(-2, -1)) / scale
+    attn  = attn.masked_fill(self.mask[:, :, :T, :T] == 0, float("-inf"))
+    attn  = F.softmax(attn, dim=-1)
+    attn  = self.attn_drop(attn)
 
-    out = attn @ v                                      # (B, H, T, d_head)
+    out = attn @ v
     out = out.transpose(1, 2).contiguous().view(B, T, C)
     return self.resid_drop(self.out_proj(out))
 ```
 
 class FeedForward(nn.Module):
-“”“Position-wise feed-forward network with GELU activation.”””
+“”“Position-wise feed-forward with GELU activation.”””
 
 ```
 def __init__(self, cfg: ModelConfig):
@@ -113,16 +108,15 @@ def forward(self, x):
 ```
 
 class TransformerBlock(nn.Module):
-“”“Pre-norm transformer block: LayerNorm → Attention → residual,
-LayerNorm → FFN → residual.”””
+“”“Pre-norm transformer block: LN → Attn → residual, LN → FFN → residual.”””
 
 ```
 def __init__(self, cfg: ModelConfig):
     super().__init__()
-    self.ln1 = nn.LayerNorm(cfg.d_model)
+    self.ln1  = nn.LayerNorm(cfg.d_model)
     self.attn = MultiHeadAttention(cfg)
-    self.ln2 = nn.LayerNorm(cfg.d_model)
-    self.ff = FeedForward(cfg)
+    self.ln2  = nn.LayerNorm(cfg.d_model)
+    self.ff   = FeedForward(cfg)
 
 def forward(self, x):
     x = x + self.attn(self.ln1(x))
@@ -132,12 +126,16 @@ def forward(self, x):
 
 # —————————————————————————
 
-# Full model
+# Full Model
 
 # —————————————————————————
 
 class TransformerLM(nn.Module):
-“”“GPT-style causal language model.”””
+“””
+AfriCode LM — GPT-style causal language model.
+Trained to assist African developers with local API integrations,
+mobile money, USSD apps, and African fintech solutions.
+“””
 
 ```
 def __init__(self, cfg: ModelConfig):
@@ -146,12 +144,12 @@ def __init__(self, cfg: ModelConfig):
 
     self.tok_emb = nn.Embedding(cfg.vocab_size, cfg.d_model)
     self.pos_emb = nn.Embedding(cfg.context_length, cfg.d_model)
-    self.drop = nn.Dropout(cfg.dropout)
-    self.blocks = nn.Sequential(*[TransformerBlock(cfg) for _ in range(cfg.n_layers)])
-    self.ln_f = nn.LayerNorm(cfg.d_model)
+    self.drop    = nn.Dropout(cfg.dropout)
+    self.blocks  = nn.Sequential(*[TransformerBlock(cfg) for _ in range(cfg.n_layers)])
+    self.ln_f    = nn.LayerNorm(cfg.d_model)
     self.lm_head = nn.Linear(cfg.d_model, cfg.vocab_size, bias=False)
 
-    # Weight tying: share token embedding and output projection weights
+    # Weight tying — share token embedding and output projection weights
     self.lm_head.weight = self.tok_emb.weight
 
     self._init_weights()
@@ -168,22 +166,22 @@ def _init_weights(self):
 def forward(self, idx, targets=None):
     """
     Args:
-        idx:     (B, T) integer token ids
-        targets: (B, T) integer token ids shifted by 1 (for next-token prediction)
+        idx:     (B, T) token ids
+        targets: (B, T) shifted token ids for next-token prediction
     Returns:
         logits: (B, T, vocab_size)
-        loss:   scalar cross-entropy loss (or None if targets not provided)
+        loss:   cross-entropy loss scalar (None if targets not provided)
     """
     B, T = idx.shape
     assert T <= self.cfg.context_length, (
         f"Sequence length {T} exceeds context_length {self.cfg.context_length}"
     )
 
-    positions = torch.arange(T, device=idx.device).unsqueeze(0)  # (1, T)
+    positions = torch.arange(T, device=idx.device).unsqueeze(0)
     x = self.drop(self.tok_emb(idx) + self.pos_emb(positions))
     x = self.blocks(x)
     x = self.ln_f(x)
-    logits = self.lm_head(x)  # (B, T, vocab_size)
+    logits = self.lm_head(x)
 
     loss = None
     if targets is not None:
@@ -192,36 +190,37 @@ def forward(self, idx, targets=None):
     return logits, loss
 
 @torch.no_grad()
-def generate(self, idx, max_new_tokens: int, temperature: float = 1.0, top_k: int = None):
+def generate(self, idx, max_new_tokens: int, temperature: float = 0.7, top_k: int = 40):
     """
-    Autoregressively generate tokens.
+    Generate code autoregressively.
+    Lower temperature = more deterministic / accurate code.
+    Higher temperature = more creative but potentially incorrect.
 
     Args:
         idx:            (B, T) seed token ids
-        max_new_tokens: how many tokens to generate
-        temperature:    >1 = more random, <1 = more focused
-        top_k:          if set, restrict sampling to top-k tokens
+        max_new_tokens: number of tokens to generate
+        temperature:    sampling temperature (default 0.7 for code)
+        top_k:          restrict sampling to top-k tokens
 
     Returns:
         (B, T + max_new_tokens) token ids
     """
     for _ in range(max_new_tokens):
-        # Crop to context window
         idx_cond = idx[:, -self.cfg.context_length:]
         logits, _ = self(idx_cond)
-        logits = logits[:, -1, :] / temperature  # last time step
+        logits = logits[:, -1, :] / temperature
 
         if top_k is not None:
             v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
             logits[logits < v[:, [-1]]] = float("-inf")
 
-        probs = F.softmax(logits, dim=-1)
+        probs      = F.softmax(logits, dim=-1)
         next_token = torch.multinomial(probs, num_samples=1)
-        idx = torch.cat([idx, next_token], dim=1)
+        idx        = torch.cat([idx, next_token], dim=1)
 
     return idx
 
 def num_parameters(self, trainable_only=True):
-    params = self.parameters() if not trainable_only else filter(lambda p: p.requires_grad, self.parameters())
+    params = filter(lambda p: p.requires_grad, self.parameters()) if trainable_only else self.parameters()
     return sum(p.numel() for p in params)
 ```
