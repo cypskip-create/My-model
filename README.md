@@ -1,243 +1,241 @@
-# TransformerLM — Full Pipeline Guide
+# AfriCode LM 🌍
 
-A complete, end-to-end pipeline for building and training your own language model.
+**The African Developer’s AI Code Assistant**
+
+AfriCode LM is a GPT-style language model built specifically for African developers, trained on African API documentation, mobile money integrations, USSD applications, and African fintech solutions.
+
+-----
+
+## Why AfriCode?
+
+Most AI coding assistants are built for Western developers using Western infrastructure. African developers face unique challenges:
+
+- **M-Pesa / Safaricom** STK Push integrations
+- **Paystack, Flutterwave** payment processing
+- **MTN MoMo, Airtel Money** mobile money APIs
+- **USSD** application development
+- **Low-bandwidth** optimized code patterns
+- Local African fintech ecosystems
+
+No major AI lab is focused on this. AfriCode fills that gap.
 
 -----
 
 ## Project Structure
 
 ```
-your-ai-repo/
-├── model.py            # Transformer architecture
-├── train.py            # Training loop (updated — supports .bin files)
-├── generate.py         # Text generation / inference
-├── data_pipeline.py    # Data collection, cleaning & tokenization
-├── urls.txt            # URLs to scrape (if using web source)
-├── raw_data/           # Drop your .txt files here
-└── processed/          # Pipeline outputs (tokenized .bin files)
+africode-lm/
+├── model.py            # Transformer architecture (AfriCode LM)
+├── train.py            # Training loop with African API code sampling
+├── generate.py         # Code generation with African API templates
+├── data_pipeline.py    # Data collection from African tech sources
+├── africode_urls.txt   # African API documentation URLs
+└── processed/          # Tokenized training data (generated)
+└── checkpoints/        # Saved model weights (generated)
 ```
 
 -----
 
-## Step 1: Install Dependencies
+## Quick Start
+
+### 1. Install Dependencies
 
 ```bash
 pip install torch tiktoken numpy datasets requests beautifulsoup4 tqdm
 ```
 
------
+### 2. Collect Training Data
 
-## Step 2: Collect & Prepare Your Data
-
-You have 3 ways to get training data:
-
-### Option A — Your Own Text Files (easiest)
-
-Drop `.txt`, `.md`, or `.json` files into a `raw_data/` folder:
+**Step 1 — Coding foundation (start here):**
 
 ```bash
-mkdir raw_data
-# Copy your text files in
-cp my_documents/*.txt raw_data/
+# Python code from GitHub (3M+ files)
+python data_pipeline.py \
+  --source hf \
+  --dataset bigcode/the-stack-smol \
+  --dataset_config python \
+  --output africode_python \
+  --output_dir ./processed \
+  --analyze
+```
 
+**Step 2 — JavaScript (for Node.js API integrations):**
+
+```bash
+python data_pipeline.py \
+  --source hf \
+  --dataset bigcode/the-stack-smol \
+  --dataset_config javascript \
+  --output africode_js \
+  --output_dir ./processed
+```
+
+**Step 3 — African API documentation:**
+
+```bash
+python data_pipeline.py \
+  --source africode \
+  --output africode_apis \
+  --output_dir ./processed \
+  --analyze
+```
+
+**Step 4 — Your own collected data:**
+
+```bash
+# Drop .txt, .py, .js, .json files into ./raw_data/
 python data_pipeline.py \
   --source files \
   --input_dir ./raw_data \
-  --output data \
-  --output_dir ./processed \
-  --analyze
-```
-
-### Option B — Scrape Websites
-
-Edit `urls.txt` and add one URL per line:
-
-```bash
-python data_pipeline.py \
-  --source web \
-  --urls urls.txt \
-  --output data \
-  --output_dir ./processed \
-  --analyze
-```
-
-### Option C — HuggingFace Datasets (best for large scale)
-
-Use any public dataset from huggingface.co/datasets:
-
-```bash
-# Wikipedia
-python data_pipeline.py \
-  --source hf \
-  --dataset wikipedia \
-  --dataset_config 20220301.en \
-  --output wikipedia \
-  --output_dir ./processed
-
-# General web text
-python data_pipeline.py \
-  --source hf \
-  --dataset wikitext \
-  --dataset_config wikitext-103-raw-v1 \
-  --output wikitext \
-  --output_dir ./processed
-
-# Books
-python data_pipeline.py \
-  --source hf \
-  --dataset bookcorpus \
-  --output books \
+  --output africode_custom \
   --output_dir ./processed
 ```
 
-### Recommended Free Datasets by Domain
-
-|Domain |Dataset            |HuggingFace Name        |
-|-------|-------------------|------------------------|
-|General|Wikipedia          |`wikipedia`             |
-|General|WebText            |`Skylion007/openwebtext`|
-|Books  |BookCorpus         |`bookcorpus`            |
-|Code   |The Stack          |`bigcode/the-stack-smol`|
-|Science|PubMed             |`pubmed_abstracts`      |
-|Legal  |FreeLaw            |`free_law`              |
-|Finance|FinancialPhraseBank|`financial_phrasebank`  |
-|News   |CC-News            |`cc_news`               |
-
------
-
-## Step 3: Train Your Model
-
-### From pre-tokenized binary files (recommended — much faster):
+### 3. Train the Model
 
 ```bash
 python train.py \
-  --data_train processed/data_train.bin \
-  --data_val processed/data_val.bin \
+  --data_train processed/africode_python_train.bin \
+  --data_val processed/africode_python_val.bin \
   --max_steps 10000
 ```
 
-### From a raw text file:
+### 4. Generate Code
 
 ```bash
-python train.py --data your_text.txt --max_steps 5000
+# Use a built-in African API template
+python generate.py --checkpoint checkpoints/best_model.pt --template mpesa
+python generate.py --checkpoint checkpoints/best_model.pt --template paystack
+python generate.py --checkpoint checkpoints/best_model.pt --template ussd
+
+# Custom prompt
+python generate.py \
+  --checkpoint checkpoints/best_model.pt \
+  --prompt "# How to integrate M-Pesa STK Push in Django REST Framework"
+
+# Interactive mode
+python generate.py --checkpoint checkpoints/best_model.pt --interactive
 ```
 
-### Scale up model size:
+-----
+
+## Training Data Strategy
+
+### Recommended Datasets (in order of priority)
+
+|Priority|Dataset               |Command                                                       |What it gives you            |
+|--------|----------------------|--------------------------------------------------------------|-----------------------------|
+|1       |The Stack (Python)    |`--dataset bigcode/the-stack-smol --dataset_config python`    |Strong coding foundation     |
+|2       |The Stack (JavaScript)|`--dataset bigcode/the-stack-smol --dataset_config javascript`|Node.js/Express API skills   |
+|3       |African API docs      |`--source africode`                                           |M-Pesa, Paystack, Flutterwave|
+|4       |CodeSearchNet         |`--dataset code_search_net`                                   |Docstrings + code pairs      |
+|5       |Your Q&A pairs        |`--source qa`                                                 |Custom fine-tuning           |
+
+### Building Q&A Pairs for Fine-Tuning
+
+Create JSON files in `./qa_pairs/` with this format:
+
+```json
+[
+  {
+    "question": "How do I integrate M-Pesa STK Push payment in Python?",
+    "answer": "Here is a complete M-Pesa STK Push implementation:\n\nimport requests\nimport base64\nfrom datetime import datetime\n\ndef mpesa_stk_push(phone_number, amount):\n    ..."
+  },
+  {
+    "question": "How do I accept Paystack payments in Django?",
+    "answer": "To integrate Paystack in Django:\n\n1. Install: pip install paystack\n..."
+  }
+]
+```
+
+Then run:
 
 ```bash
-# Medium model (~25M params)
-python train.py \
-  --data_train processed/data_train.bin \
-  --data_val processed/data_val.bin \
-  --d_model 512 \
-  --n_heads 8 \
-  --n_layers 8 \
-  --d_ff 2048 \
-  --context_len 512 \
-  --batch_size 16 \
-  --max_steps 50000
-
-# Large model (~85M params — GPT-2 equivalent)
-python train.py \
-  --data_train processed/data_train.bin \
-  --data_val processed/data_val.bin \
-  --d_model 768 \
-  --n_heads 12 \
-  --n_layers 12 \
-  --d_ff 3072 \
-  --context_len 1024 \
-  --batch_size 8 \
-  --max_steps 100000
+python data_pipeline.py --source qa --input_dir ./qa_pairs --output africode_ft
+python train.py --data_train processed/africode_ft_train.bin --data_val processed/africode_ft_val.bin
 ```
 
-### On Google Colab (free GPU):
+-----
+
+## Model Sizes
+
+|Config         |Params|Good for                    |GPU needed|
+|---------------|------|----------------------------|----------|
+|Small (default)|~25M  |Experiments, Colab free tier|T4 (free) |
+|Medium         |~85M  |Serious training            |A100      |
+|Large          |~300M |Production quality          |A100 x2   |
+
+### Scale up:
+
+```bash
+# Medium (~85M params — GPT-2 equivalent)
+python train.py \
+  --data_train processed/africode_python_train.bin \
+  --data_val processed/africode_python_val.bin \
+  --d_model 768 --n_heads 12 --n_layers 12 --d_ff 3072 \
+  --context_len 1024 --batch_size 8 --max_steps 50000
+```
+
+-----
+
+## Training on Google Colab (Free)
 
 ```python
-# Run in a Colab cell
-!git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
-%cd YOUR_REPO
+# Paste into a Colab cell — Runtime > Change runtime type > T4 GPU
+
+!git clone https://github.com/YOUR_USERNAME/africode-lm.git
+%cd africode-lm
 !pip install torch tiktoken numpy datasets requests beautifulsoup4 tqdm
 
-# Prepare data
-!python data_pipeline.py --source hf --dataset wikitext \
-    --dataset_config wikitext-103-raw-v1 --output wikitext --output_dir ./processed
+# Get coding data
+!python data_pipeline.py \
+    --source hf \
+    --dataset bigcode/the-stack-smol \
+    --dataset_config python \
+    --output africode \
+    --output_dir ./processed \
+    --analyze
 
 # Train
 !python train.py \
-    --data_train processed/wikitext_train.bin \
-    --data_val processed/wikitext_val.bin \
-    --max_steps 5000
+    --data_train processed/africode_train.bin \
+    --data_val processed/africode_val.bin \
+    --max_steps 10000
+
+# Generate code
+!python generate.py \
+    --checkpoint checkpoints/best_model.pt \
+    --template mpesa
 ```
 
 -----
 
-## Step 4: Generate Text
+## Roadmap
 
-```bash
-python generate.py \
-  --checkpoint checkpoints/best_model.pt \
-  --prompt "Artificial intelligence is" \
-  --max_new_tokens 200 \
-  --temperature 0.8 \
-  --top_k 50 \
-  --num_samples 3
-```
-
------
-
-## Understanding Your Training Output
-
-```
-Step   50 | loss 4.2310 | lr 3.00e-04 | 12,450 tok/s
-Step  100 | loss 3.8821 | lr 3.00e-04 | 12,512 tok/s
-
-[Eval step 500] train=3.1204  val=3.2891
-✓ New best val loss! Saved to checkpoints/best_model.pt
-
---- Sample at step 500 ---
-The quick brown fox jumped over the lazy...
-```
-
-|Metric    |What it means                                      |
-|----------|---------------------------------------------------|
-|`loss`    |Lower = better. Starts ~4-5, good models reach ~2-3|
-|`val loss`|Validation loss — key indicator of real learning   |
-|`tok/s`   |Training speed in tokens per second                |
-
-**Loss interpretation:**
-
-- `loss > 4.0` — Early training, model is barely learning
-- `loss 3.0–4.0` — Model learning basic patterns
-- `loss 2.0–3.0` — Coherent text, domain knowledge emerging
-- `loss < 2.0` — Strong model (requires lots of data + compute)
+- [x] Base transformer architecture
+- [x] Data pipeline with African API sources
+- [x] African API code generation templates
+- [ ] Fine-tuning on Q&A pairs
+- [ ] REST API wrapper
+- [ ] Web interface for developers
+- [ ] Fine-tune on M-Pesa, Paystack, Flutterwave docs
+- [ ] Support for Swahili + English mixed prompts
+- [ ] VSCode extension
 
 -----
 
-## Resuming Training
+## Supported African APIs
 
-```bash
-python train.py \
-  --data_train processed/data_train.bin \
-  --data_val processed/data_val.bin \
-  --resume checkpoints/ckpt_step5000.pt \
-  --max_steps 20000
-```
+|API               |Country             |Use Case                 |
+|------------------|--------------------|-------------------------|
+|M-Pesa (Safaricom)|Kenya               |Mobile payments, STK Push|
+|Paystack          |Nigeria, Ghana, SA  |Online payments          |
+|Flutterwave       |Pan-Africa          |Payments, transfers      |
+|MTN MoMo          |17 African countries|Mobile money             |
+|Airtel Money      |14 African countries|Mobile payments          |
+|Chipper Cash      |Pan-Africa          |P2P transfers            |
+|DPO Pay           |Pan-Africa          |Online payments          |
 
 -----
 
-## Hardware & Cost Estimates
-
-|Model Size|Params|GPU          |Train Time (10K steps)|Cloud Cost|
-|----------|------|-------------|----------------------|----------|
-|Small     |10M   |Free Colab T4|~30 min               |Free      |
-|Medium    |25M   |RTX 3090     |~1 hr                 |~$0.40    |
-|Large     |85M   |RTX 4090     |~3 hrs                |~$1.50    |
-|GPT-2     |117M  |A100         |~6 hrs                |~$6.00    |
-
-Recommended cloud platforms (cheapest first):
-
-1. **Google Colab** — Free T4/A100 (limited hours)
-1. **Kaggle** — Free T4 (30 hrs/week)
-1. **Vast.ai** — ~$0.20–0.40/hr
-1. **RunPod** — ~$0.25–0.50/hr
-1. **Lambda Labs** — ~$0.50–1.00/hr
+*Built in Nairobi. For African developers, by African developers.*
