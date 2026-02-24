@@ -17,7 +17,7 @@ python train.py --data_train processed/data_train.bin --data_val processed/data_
 
 Requirements:
 pip install torch tiktoken numpy
-“””
+
 
 import os
 import math
