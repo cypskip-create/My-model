@@ -1,0 +1,47 @@
+# africode_urls.txt — African API Documentation URLs
+
+# =====================================================
+
+# These URLs are scraped to train AfriCode LM on African
+
+# API integrations, mobile money, and fintech solutions.
+
+# 
+
+# Usage:
+
+# python data_pipeline.py –source web –urls africode_urls.txt –output africode_apis
+
+# 
+
+# Add more URLs below as you discover good sources.
+
+# Lines starting with # are ignored.
+
+# — M-Pesa / Safaricom (Kenya) —
+
+https://developer.safaricom.co.ke/APIs
+https://developer.safaricom.co.ke/Documentation
+
+# — Paystack (Nigeria, Ghana, South Africa) —
+
+https://paystack.com/docs/api/
+https://paystack.com/docs/payments/accept-payments/
+https://paystack.com/docs/libraries-and-plugins/
+https://paystack.com/docs/payments/verify-payments/
+
+# — Flutterwave (Pan-Africa) —
+
+https://developer.flutterwave.com/docs
+https://developer.flutterwave.com/reference
+
+# — MTN Mobile Money —
+
+https://momodeveloper.mtn.com/docs
+
+# — African Tech Blogs —
+
+https://engineering.paystack.com
+https://medium.com/andela
+
+# — Add your own URLs below —
