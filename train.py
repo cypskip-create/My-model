@@ -46,7 +46,9 @@ data_group.add_argument("--data_train", type=str, help="Pre-tokenized train .bin
 parser.add_argument("--data_val",       type=str, help="Pre-tokenized val .bin file")
 
 # Output
-parser.add_argument("--out_dir",      type=str,   default="checkpoints")
+parser.add_argument("--out_dir",
+                    type=str,
+                    default="/content/drive/MyDrive/ai_checkpoints/")
 
 # Model architecture
 parser.add_argument("--context_len",  type=int,   default=256)
@@ -310,7 +312,7 @@ for step in range(start_step, args.max_steps):
 
     # Save checkpoint
     if step > 0 and step % args.save_every == 0:
-        ckpt_path = os.path.join(args.out_dir, f"ckpt_step{step}.pt")
+        ckpt_path = f"/content/drive/MyDrive/ai_checkpoints/ckpt_step{step}.pt")
         torch.save({
             "model":     model.state_dict(),
             "optimizer": optimizer.state_dict(),
