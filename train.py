@@ -36,7 +36,7 @@ from model import ModelConfig, TransformerLM
 # —————————————————————————
 
 def parse_args():
-parser = argparse.ArgumentParser(description=“Train TransformerLM”)
+parser = argparse.ArgumentParser(description=Train TransformerLM)
 
 ```
 # Data sources
