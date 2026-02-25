@@ -1,5 +1,5 @@
 ## “””
-generate.py — AfriCode LM Code Generation
+generate.py - AfriCode LM Code Generation
 
 Load a trained AfriCode model and generate code for African API integrations.
 
@@ -41,7 +41,7 @@ PROMPT_TEMPLATES = {
 }
 
 def parse_args():
-parser = argparse.ArgumentParser(description=“AfriCode LM — Code Generation”)
+parser = argparse.ArgumentParser(description=“AfriCode LM - Code Generation”)
 parser.add_argument(”–checkpoint”,     type=str,   required=True,    help=“Path to model checkpoint”)
 parser.add_argument(”–prompt”,         type=str,   default=None,     help=“Custom prompt text”)
 parser.add_argument(”–template”,       type=str,   default=None,
@@ -75,7 +75,7 @@ return enc.decode(out[0].tolist())
 
 def interactive_mode(model, enc, device, args):
 “”“Interactive code generation loop.”””
-print(”\nAfriCode LM — Interactive Mode”)
+print(”\nAfriCode LM - Interactive Mode”)
 print(“Type your prompt and press Enter. Type ‘quit’ to exit.”)
 print(“Available templates:”, “, “.join(PROMPT_TEMPLATES.keys()))
 print(”=”*50)
