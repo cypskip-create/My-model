@@ -48,8 +48,8 @@ from typing import List, Iterator
 
 AFRICODE_URLS = [
 # M-Pesa / Safaricom
-“https://developer.safaricom.co.ke/APIs”,
-“https://developer.safaricom.co.ke/Documentation”,
+https://developer.safaricom.co.ke/APIs,
+https://developer.safaricom.co.ke/Documentation,
 
 
 # Paystack
