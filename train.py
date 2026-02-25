@@ -1,5 +1,5 @@
 ## “””
-train.py — Training Script for AfriCode LM
+train.py - Training Script for AfriCode LM
 
 Trains the African Code Assistant on coding datasets and
 African API documentation (M-Pesa, Paystack, Flutterwave, etc.)
@@ -41,7 +41,7 @@ def parse_args():
 parser = argparse.ArgumentParser(description=“Train AfriCode LM”)
 
 ```
-# Data — use one of these two options
+# Data - use one of these two options
 parser.add_argument("--data",       type=str, default=None,
                     help="Raw .txt file (tokenized on the fly)")
 parser.add_argument("--data_train", type=str, default=None,
@@ -52,7 +52,7 @@ parser.add_argument("--data_val",   type=str, default=None,
 # Output
 parser.add_argument("--out_dir",      type=str,   default="checkpoints")
 
-# Model architecture — tuned for code generation
+# Model architecture - tuned for code generation
 parser.add_argument("--context_len",  type=int,   default=512,   help="Max sequence length")
 parser.add_argument("--d_model",      type=int,   default=512,   help="Embedding dimension")
 parser.add_argument("--n_heads",      type=int,   default=8,     help="Attention heads")
@@ -78,7 +78,7 @@ parser.add_argument("--sample_every", type=int,   default=500)
 # Misc
 parser.add_argument("--resume",       type=str,   default=None,  help="Path to checkpoint to resume from")
 parser.add_argument("--seed",         type=int,   default=42)
-parser.add_argument("--compile",      action="store_true",        help="Use torch.compile() — PyTorch 2.0+")
+parser.add_argument("--compile",      action="store_true",        help="Use torch.compile() - PyTorch 2.0+")
 
 return parser.parse_args()
 ```
@@ -142,7 +142,7 @@ return x.to(device), y.to(device)
 
 # —————————————————————————
 
-# Learning Rate Schedule — Linear Warmup + Cosine Decay
+# Learning Rate Schedule - Linear Warmup + Cosine Decay
 
 # —————————————————————————
 
@@ -180,7 +180,7 @@ return results
 
 # —————————————————————————
 
-# Code Sampling — African API focused prompts
+# Code Sampling - African API focused prompts
 
 # —————————————————————————
 
@@ -198,7 +198,7 @@ AFRICODE_PROMPTS = [
 def sample_code(model, enc, device, temperature=0.7, top_k=40, max_new_tokens=150):
 “”“Generate a code sample using an African API prompt.”””
 if enc is None:
-return “(sampling unavailable — tiktoken not installed)”
+return “(sampling unavailable - tiktoken not installed)”
 
 ```
 import random
@@ -266,7 +266,7 @@ if args.compile:
     print("Compiling model with torch.compile() for faster training...")
     model = torch.compile(model)
 
-# Optimizer — separate weight decay for weights vs biases/norms
+# Optimizer - separate weight decay for weights vs biases/norms
 decay_params   = [p for n, p in model.named_parameters() if p.dim() >= 2]
 nodecay_params = [p for n, p in model.named_parameters() if p.dim() < 2]
 optimizer = torch.optim.AdamW(
@@ -333,7 +333,7 @@ for step in range(start_step, args.max_steps):
             best_val_loss = metrics["val"]
             best_path     = os.path.join(args.out_dir, "best_model.pt")
             torch.save({"model": model.state_dict(), "cfg": cfg.__dict__, "step": step}, best_path)
-            print(f"  ✓ Best model saved → {best_path}\n")
+            print(f"  v Best model saved -> {best_path}\n")
 
     # Sample code
     if step > 0 and step % args.sample_every == 0:
@@ -352,12 +352,12 @@ for step in range(start_step, args.max_steps):
             "cfg":       cfg.__dict__,
             "step":      step,
         }, ckpt_path)
-        print(f"  Checkpoint saved → {ckpt_path}")
+        print(f"  Checkpoint saved -> {ckpt_path}")
 
 # Final save
 final_path = os.path.join(args.out_dir, "africode_final.pt")
 torch.save({"model": model.state_dict(), "cfg": cfg.__dict__, "step": args.max_steps}, final_path)
-print(f"\nTraining complete! Final model → {final_path}")
+print(f"\nTraining complete! Final model -> {final_path}")
 ```
 
 if **name** == “**main**”:
