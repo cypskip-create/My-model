@@ -79,15 +79,15 @@ https://developer.safaricom.co.ke/Documentation,
 
 def parse_args():
 parser = argparse.ArgumentParser(description=AfriCode LM Data Pipeline)
-parser.add_argument(source,     type=str, required=True,
-choices=[“files”, “web”, “hf”, “qa”, “africode”],
-help=“Data source type:\n”
-“  files    - local .txt/.json files\n”
-“  web      - scrape URLs from a file\n”
-“  hf       - HuggingFace dataset\n”
-“  qa       - Q&A pairs for fine-tuning\n”
-“  africode - auto-scrape African API docs”)
-parser.add_argument(”–input_dir”,      type=str, default=”./raw_data”)
+parser.add_argument(source, type=str, required=True,
+choices=[files, web, hf, qa, africode],
+help=Data source type:\n
+  files    - local .txt/.json files\n
+  web      - scrape URLs from a file\n
+  hf       - HuggingFace dataset\n
+  qa       - Q&A pairs for fine-tuning\n
+  africode - auto-scrape African API docs)
+parser.add_argument(–input_dir”,      type=str, default=”./raw_data”)
 parser.add_argument(”–urls”,           type=str, default=“africode_urls.txt”)
 parser.add_argument(”–dataset”,        type=str, default=“bigcode/the-stack-smol”)
 parser.add_argument(”–dataset_config”, type=str, default=“python”,
